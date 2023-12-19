@@ -2,24 +2,28 @@ from datetime import datetime
 
 from django.db.models import QuerySet
 
-from db.models import MovieSession
+from db.models import MovieSession, Movie, CinemaHall
 
 
 def create_movie_session(movie_show_time: datetime,
                          movie_id: int,
                          cinema_hall_id: int) -> None:
+    movie = Movie.objects.get(id=movie_id)
+    cinema_hall = CinemaHall.objects.get(id=cinema_hall_id)
     MovieSession.objects.create(
         show_time=movie_show_time,
-        cinema_hall=cinema_hall_id,
-        movie=movie_id
+        cinema_hall=cinema_hall,
+        movie=movie
     )
 
 
 def get_movies_sessions(session_date: str = None) -> QuerySet:
-    movie_sessions = MovieSession.objects.all()
 
     if session_date:
-        movie_sessions.filter(show_time__date=session_date)
+        date = datetime.strptime(session_date, "%Y-%m-%d")
+        movie_sessions = MovieSession.objects.filter(show_time__date=date)
+    else:
+        movie_sessions = MovieSession.objects.all()
 
     return movie_sessions
 
@@ -38,10 +42,10 @@ def update_movie_session(session_id: int,
         movie_session.show_time = show_time
 
     if movie_id:
-        movie_session.movie = movie_id
+        movie_session.movie_id = movie_id
 
     if cinema_hall_id:
-        movie_session.cinema_hall = cinema_hall_id
+        movie_session.cinema_hall_id = cinema_hall_id
 
     movie_session.save()
 
